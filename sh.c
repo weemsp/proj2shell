@@ -15,7 +15,7 @@ int sh( int argc, char **argv, char **envp) {
   char *prompt = calloc(PROMPTMAX, sizeof(char));
   char *commandline = calloc(MAX_CANON, sizeof(char));
   char *command, *arg, *commandpath, *p, *pwd, *owd;
-  char **args = calloc(MAXARGS, sizeof(char*));
+  char **args = NULL;// = calloc(MAXARGS, sizeof(char*));
   int uid, i, status, argsct, go = 1;
   struct passwd *password_entry;
   char *homedir;
@@ -30,6 +30,7 @@ int sh( int argc, char **argv, char **envp) {
     perror("getcwd");
     exit(2);
   }
+  free(pwd);
   owd = calloc(strlen(pwd) + 1, sizeof(char));
   memcpy(owd, pwd, strlen(pwd));
   prompt[0] = ' '; prompt[1] = '\0';
@@ -42,6 +43,7 @@ int sh( int argc, char **argv, char **envp) {
     printf("%s", prompt);
     /* get command line and process */
     fgets(commandline, MAX_CANON, stdin);
+    freeStringArray(args);
     args = stringToArray(commandline);
     printf("%s", args[0]);
      //contin = 0;
@@ -56,7 +58,7 @@ int sh( int argc, char **argv, char **envp) {
         /* fprintf(stderr, "%s: Command not found.\n", args[0]); */
     }
   }
-  free(args);
+  freeStringArray(args);
   free(prompt);
   free(commandline);
   free(owd);
@@ -78,6 +80,9 @@ void list (char *dir) {
   the directory passed */
 } /* list() */
 
+/**
+  Allocates memory.
+*/
 char** stringToArray(char* input) {
   char buf[MAX_CANON];
   strcpy(buf, input);
@@ -101,3 +106,14 @@ char** stringToArray(char* input) {
   return argv;
 }
 
+/**
+  frees an array of strings
+*/
+int freeStringArray(char** ray) {
+  if (ray == NULL)
+    return 0;
+  for (int i = 0; ray[i] != NULL; i++)
+    free(ray[i]);
+  free(ray);
+  return 1;
+}

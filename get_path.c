@@ -7,8 +7,7 @@
 */
 #include "get_path.h"
 
-struct pathelement *get_path()
-{
+struct pathelement *get_path() {
   /* path is a copy of the PATH and p is a temp pointer */
   char *path, *p;
 
@@ -24,21 +23,20 @@ struct pathelement *get_path()
   path[strlen(p)] = '\0';
 
   p = strtok(path, ":"); 	/* PATH is : delimited */
-  do				/* loop through the PATH */
-  {				/* to build a linked list of dirs */
-    if ( !pathlist )		/* create head of list */
-    {
+  do {				/* loop through the PATH  to build a linked list of dirs */
+    if (!pathlist) {		/* create head of list */
       tmp = calloc(1, sizeof(struct pathelement));
       pathlist = tmp;
-    }
-    else			/* add on next element */
-    {
+    } else {
+      struct pathelement* todel = tmp;
       tmp->next = calloc(1, sizeof(struct pathelement));
       tmp = tmp->next;
+      free(todel);
     }
     tmp->element = p;	
     tmp->next = NULL;
-  } while ( p = strtok(NULL, ":") );
-
+  } while (p = strtok(NULL, ":"));
+  free(tmp);
+  free(path);
   return pathlist;
 } /* end get_path() */
