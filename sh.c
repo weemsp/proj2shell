@@ -30,11 +30,11 @@ int sh( int argc, char **argv, char **envp) {
     perror("getcwd");
     exit(2);
   }
-  free(pwd);
   owd = calloc(strlen(pwd) + 1, sizeof(char));
   memcpy(owd, pwd, strlen(pwd));
-  prompt[0] = ' '; prompt[1] = '\0';
-  
+  free(pwd);
+  prompt[0] = '?'; prompt[1] = ' '; prompt[2] = '\0';
+  printf("Type \"help\" for a list of commands.\n");
   /* Put PATH into a linked list */
   pathlist = get_path();
   int contin = 1;
@@ -45,11 +45,23 @@ int sh( int argc, char **argv, char **envp) {
     fgets(commandline, MAX_CANON, stdin);
     freeStringArray(args);
     args = stringToArray(commandline);
-    printf("%s", args[0]);
+    printf("%s\n", args[0]);
      //contin = 0;
     /* check for each built in command and implement */
     if (strncmp(args[0], "exit", 4) == 0) {
       contin = 0;
+    } else if (strncmp(args[0], "help", 4) == 0) {
+      printf("exit: exit the shell\n");
+      printf("help: display list of commands\n");
+      printf("prompt (newprompt): change prompt to newprompt\n");
+    } else if (strncmp(args[0], "which", 5) == 0) {
+      printf("%s", which(args[1], pathlist));
+    } else if (strncmp(args[0], "prompt", 6) == 0) {
+      if (args[1] != NULL) {
+        strcpy(prompt, args[1]);
+        prompt[strlen(prompt)-1] = ' ';
+        prompt[strlen(prompt)] = '\0';
+      } //this might be a problem if you put in a prompt of max length, but I'm sure that's never going to happen
     } else {/*  else  program to exec */
        /* find it */
        /* do fork(), execve() and waitpid() */
@@ -68,11 +80,14 @@ int sh( int argc, char **argv, char **envp) {
 char *which(char *command, struct pathelement *pathlist) {
    /* loop through pathlist until finding command and return it.  Return
    NULL when not found. */
-
+  while (pathlist != NULL) {
+    pathlist = pathlist->next;
+  }
 } /* which() */
 
 char *where(char *command, struct pathelement *pathlist) {
   /* similarly loop through finding all locations of command */
+  return which(command, pathlist);
 } /* where() */
 
 void list (char *dir) {
