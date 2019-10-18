@@ -53,9 +53,12 @@ int sh( int argc, char **argv, char **envp) {
     } else if (strncmp(args[0], "help", 4) == 0) {
       printf("exit: exit the shell\n");
       printf("help: display list of commands\n");
+      printf("which: find address of executable file\n");
       printf("prompt (newprompt): change prompt to newprompt\n");
     } else if (strncmp(args[0], "which", 5) == 0) {
-      printf("%s", which(args[1], pathlist));
+      char* paff = which(args[1], pathlist);
+      //printf("%s\n", paff);
+      free(paff);
     } else if (strncmp(args[0], "prompt", 6) == 0) {
       if (args[1] != NULL) {
         strcpy(prompt, args[1]);
@@ -64,6 +67,14 @@ int sh( int argc, char **argv, char **envp) {
       } //this might be a problem if you put in a prompt of max length, but I'm sure that's never going to happen
     } else {/*  else  program to exec */
        /* find it */
+      char* paff = which(args[0], pathlist);
+      //printf("%s\n", paff); //when i uncomment this it segfaults
+      if (paff == NULL) {
+        printf("Command could not be found\n");
+      } else {
+        printf("Program could be found and can be executed, but I'm not dealing with that just yet\n");
+      }
+      free(paff);
        /* do fork(), execve() and waitpid() */
 
       /* else */
@@ -77,18 +88,38 @@ int sh( int argc, char **argv, char **envp) {
   return 0;
 } /* sh() */
 
+/**
+  Allocates and returns memory only on success
+*/
 char *which(char *command, struct pathelement *pathlist) {
    /* loop through pathlist until finding command and return it.  Return
    NULL when not found. */
+  printf("%s/n", command);
   while (pathlist != NULL) {
+    printf("%s\n", pathlist->element);
+    int len = sizeof(char) * (strlen(command) + strlen(pathlist->element) + 2);
+    char* paff = malloc(len);
+    
+    strcpy(paff, pathlist->element);
+    strcat(paff, "/");
+    strcat(paff, command);
+    paff[len-1] = '\0';
+    printf("%s\n", paff);
+    int acc = access(paff, X_OK);
+    //printf("%d\n", acc);
+    if (acc >= 0) {
+      return paff;
+    }
+    free(paff);
     pathlist = pathlist->next;
   }
-} /* which() */
+  return NULL;
+}
 
 char *where(char *command, struct pathelement *pathlist) {
   /* similarly loop through finding all locations of command */
   return which(command, pathlist);
-} /* where() */
+}
 
 void list (char *dir) {
   /* see man page for opendir() and readdir() and print out filenames for
