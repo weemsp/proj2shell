@@ -111,7 +111,7 @@ int sh( int argc, char **argv, char **envp) {
 char *which(char *command, struct pathelement *pathlist) {
    /* loop through pathlist until finding command and return it.  Return
    NULL when not found. */
-  printf("%s/n", command);
+  printf("Searching for %s\n", command);
   while (pathlist != NULL) {
     //printf("%s\n", pathlist->element);
     int len = sizeof(char) * (strlen(command) + strlen(pathlist->element) + 2);
@@ -130,6 +130,7 @@ char *which(char *command, struct pathelement *pathlist) {
     free(paff);
     pathlist = pathlist->next;
   }
+  printf("Could not find %s\n", command);
   return NULL;
 }
 
