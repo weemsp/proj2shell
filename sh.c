@@ -43,6 +43,8 @@ int sh( int argc, char **argv, char **envp) {
     printf("%s", prompt);
     /* get command line and process */
     fgets(commandline, MAX_CANON, stdin);
+    int len = strlen(commandline);
+    commandline[len-1] = '\0';
     freeStringArray(args);
     args = stringToArray(commandline);
     printf("%s\n", args[0]);
@@ -51,10 +53,10 @@ int sh( int argc, char **argv, char **envp) {
     if (strncmp(args[0], "exit", 4) == 0) {
       contin = 0;
     } else if (strncmp(args[0], "help", 4) == 0) {
-      printf("exit: exit the shell\n");
-      printf("help: display list of commands\n");
-      printf("which: find address of executable file\n");
-      printf("prompt (newprompt): change prompt to newprompt\n");
+      puts("exit: exit the shell");
+      puts("help: display list of commands");
+      puts("which: find address of executable file");
+      puts("prompt (newprompt): change prompt to newprompt");
     } else if (strncmp(args[0], "which", 5) == 0) {
       char* paff = which(args[1], pathlist);
       //printf("%s\n", paff);
@@ -70,9 +72,18 @@ int sh( int argc, char **argv, char **envp) {
       char* paff = which(args[0], pathlist);
       //printf("%s\n", paff); //when i uncomment this it segfaults
       if (paff == NULL) {
-        printf("Command could not be found\n");
+        puts("Command could not be found");
       } else {
-        printf("Program could be found and can be executed, but I'm not dealing with that just yet\n");
+        pid_t pid = fork();
+        if (pid < 0) {
+          puts("Fork failed");
+        } else if (pid == 0) {
+          execve(paff, args, NULL);
+          puts("error");
+          exit(0);
+        } else {
+          waitpid(pid, NULL, 0);
+        }
       }
       free(paff);
        /* do fork(), execve() and waitpid() */
@@ -85,6 +96,12 @@ int sh( int argc, char **argv, char **envp) {
   free(prompt);
   free(commandline);
   free(owd);
+  while (pathlist != NULL) {
+    struct pathelement* todel = pathlist;
+    pathlist = pathlist->next;
+    free(todel->element);
+    free(todel);
+  }
   return 0;
 } /* sh() */
 
@@ -96,7 +113,7 @@ char *which(char *command, struct pathelement *pathlist) {
    NULL when not found. */
   printf("%s/n", command);
   while (pathlist != NULL) {
-    printf("%s\n", pathlist->element);
+    //printf("%s\n", pathlist->element);
     int len = sizeof(char) * (strlen(command) + strlen(pathlist->element) + 2);
     char* paff = malloc(len);
     
@@ -104,10 +121,10 @@ char *which(char *command, struct pathelement *pathlist) {
     strcat(paff, "/");
     strcat(paff, command);
     paff[len-1] = '\0';
-    printf("%s\n", paff);
     int acc = access(paff, X_OK);
     //printf("%d\n", acc);
     if (acc >= 0) {
+      printf("Found at %s\n", paff);
       return paff;
     }
     free(paff);

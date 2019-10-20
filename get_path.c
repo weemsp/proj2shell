@@ -28,15 +28,11 @@ struct pathelement *get_path() {
       tmp = calloc(1, sizeof(struct pathelement));
       pathlist = tmp;
     } else {
-      struct pathelement* todel = tmp;
       tmp->next = calloc(1, sizeof(struct pathelement));
       tmp = tmp->next;
-      free(todel);
     }
-    tmp->element = p;	
+    tmp->element = p;
     tmp->next = NULL;
   } while (p = strtok(NULL, ":"));
-  free(tmp);
-  free(path);
   return pathlist;
 } /* end get_path() */
