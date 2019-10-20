@@ -96,10 +96,12 @@ int sh( int argc, char **argv, char **envp) {
   free(prompt);
   free(commandline);
   free(owd);
+  free(pathlist->element);
   while (pathlist != NULL) {
+    //printf("%s\n", pathlist->element);
     struct pathelement* todel = pathlist;
     pathlist = pathlist->next;
-    free(todel->element);
+    //free(todel->element);
     free(todel);
   }
   return 0;
