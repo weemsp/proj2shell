@@ -56,7 +56,9 @@ int sh( int argc, char **argv, char **envp) {
       puts("exit: exit the shell");
       puts("help: display list of commands");
       puts("which: find address of executable file");
+      puts("pwd: print working directory");
       puts("prompt (newprompt): change prompt to newprompt");
+      puts("(name of program) (arguments for program): search for and execute the program. i know it works with vim and ls");
     } else if (strncmp(args[0], "which", 5) == 0) {
       char* paff = which(args[1], pathlist);
       //printf("%s\n", paff);
@@ -67,6 +69,9 @@ int sh( int argc, char **argv, char **envp) {
         prompt[strlen(prompt)-1] = ' ';
         prompt[strlen(prompt)] = '\0';
       } //this might be a problem if you put in a prompt of max length, but I'm sure that's never going to happen
+    } else if (strncmp(args[0], "pwd", 3) == 0) {
+      getcwd(commandline, MAX_CANON);
+      printf("%s\n", commandline);
     } else {/*  else  program to exec */
        /* find it */
       char* paff = which(args[0], pathlist);
